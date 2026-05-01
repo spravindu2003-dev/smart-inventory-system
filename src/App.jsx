@@ -1,23 +1,20 @@
-
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Dashboard from './pages/Dashboard'
+import Products from './pages/Products'
 
 function App() {
-  
-
   return (
-    
-        <div>
+    <div>
+      <Navbar />
 
-          <header>
-          <h1>Smart Inventory System</h1>
-          </header>
-          
-          <main>
-          <h2>Dashboard</h2>
-          </main>
-          
-        </div>
-        
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/sales" element={<h2>Sales Page</h2>} />
+        <Route path="/reports" element={<h2>Reports Page</h2>} />
+      </Routes>
+    </div>
   )
 }
 
