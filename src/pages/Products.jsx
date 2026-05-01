@@ -6,6 +6,9 @@ function Products() {
   const [qty, setQty] = useState('')
   const [note, setNote] = useState('')
 
+  // ✅ FILTER STATE (NEW)
+  const [filter, setFilter] = useState("all")
+
   const [products, setProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('products')
@@ -129,6 +132,17 @@ function Products() {
         </button>
       </div>
 
+      {/* ✅ FILTER BUTTONS */}
+      <div style={{ marginBottom: "15px" }}>
+        <button onClick={() => setFilter("all")}>All</button>
+        <button onClick={() => setFilter("active")} style={{ marginLeft: "10px" }}>
+          Active
+        </button>
+        <button onClick={() => setFilter("removed")} style={{ marginLeft: "10px" }}>
+          Removed
+        </button>
+      </div>
+
       {/* TABLE */}
       <table border="1" cellPadding="10" style={{ width: "100%" }}>
         <thead>
@@ -149,59 +163,67 @@ function Products() {
               </td>
             </tr>
           ) : (
-            products.map((item, index) => {
+            products
+              // ✅ FILTER LOGIC
+              .filter((item) => {
+                if (filter === "all") return true
+                return item.status === filter
+              })
+              .map((item, index) => {
 
-              const history = Array.isArray(item.history) ? item.history : []
+                const history = Array.isArray(item.history) ? item.history : []
 
-              const created = history.find(h => h.action === "created") || history[0]
+                const created = history.find(h => h.action === "created") || history[0]
 
-              const fullHistory = history
-                .map(h => `${h.action.toUpperCase()}: ${h.time}${h.note ? " - " + h.note : ""}`)
-                .join("\n")
+                const fullHistory = history
+                  .map(h => `${h.action.toUpperCase()}: ${h.time}${h.note ? " - " + h.note : ""}`)
+                  .join("\n")
 
-              return (
-                <tr
-                  key={index}
-                  style={{
-                    opacity: item.status === "removed" ? 0.5 : 1,
-                    textDecoration: item.status === "removed" ? "line-through" : "none"
-                  }}
-                >
-
-                  {/* SAFE CREATED DATA */}
-                  <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                    {item.name}
-                  </td>
-
-                  <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                    {item.price}
-                  </td>
-
-                  <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                    {item.qty}
-                  </td>
-
-                  {/* STATUS */}
-                  <td
-                    title={fullHistory}
+                return (
+                  <tr
+                    key={index}
                     style={{
-                      color: item.status === "active" ? "green" : "red",
-                      fontWeight: "bold"
+                      opacity: item.status === "removed" ? 0.5 : 1,
+                      textDecoration: item.status === "removed" ? "line-through" : "none"
                     }}
                   >
-                    {item.status === "active" ? "Active" : "Removed"}
-                  </td>
 
-                  {/* ACTION */}
-                  <td title={fullHistory}>
-                    <button onClick={() => toggleStatus(index)}>
-                      {item.status === "active" ? "Remove" : "Restore"}
-                    </button>
-                  </td>
+                    {/* NAME */}
+                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
+                      {item.name}
+                    </td>
 
-                </tr>
-              )
-            })
+                    {/* PRICE */}
+                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
+                      {item.price}
+                    </td>
+
+                    {/* QTY */}
+                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
+                      {item.qty}
+                    </td>
+
+                    {/* STATUS */}
+                    <td
+                      title={fullHistory}
+                      style={{
+                        color: item.status === "active" ? "green" : "red",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {item.status === "active" ? "Active" : "Removed"}
+                    </td>
+
+                    {/* ACTION */}
+                    <td title={fullHistory}>
+                      <button onClick={() => toggleStatus(index)}>
+                        {item.status === "active" ? "Remove" : "Restore"}
+                      </button>
+                    </td>
+
+                  </tr>
+                )
+              })
           )}
         </tbody>
       </table>
