@@ -6,7 +6,8 @@ function Products() {
   const [qty, setQty] = useState('')
   const [note, setNote] = useState('')
 
-  // ✅ FILTER STATE (NEW)
+  // 🔍 SEARCH + FILTER
+  const [search, setSearch] = useState('')
   const [filter, setFilter] = useState("all")
 
   const [products, setProducts] = useState(() => {
@@ -100,47 +101,27 @@ function Products() {
 
       {/* INPUTS */}
       <div style={{ marginBottom: "20px" }}>
-        <input
-          placeholder="Product Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <input
-          placeholder="Price"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          style={{ marginLeft: "10px" }}
-        />
-
-        <input
-          placeholder="Quantity"
-          value={qty}
-          onChange={(e) => setQty(e.target.value)}
-          style={{ marginLeft: "10px" }}
-        />
-
-        <input
-          placeholder="Note (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          style={{ marginLeft: "10px" }}
-        />
-
-        <button onClick={addProduct} style={{ marginLeft: "10px" }}>
-          Add
-        </button>
+        <input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} style={{ marginLeft: "10px" }} />
+        <input placeholder="Quantity" value={qty} onChange={(e) => setQty(e.target.value)} style={{ marginLeft: "10px" }} />
+        <input placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} style={{ marginLeft: "10px" }} />
+        <button onClick={addProduct} style={{ marginLeft: "10px" }}>Add</button>
       </div>
 
-      {/* ✅ FILTER BUTTONS */}
+      {/* 🔍 SEARCH */}
+      <div style={{ marginBottom: "10px" }}>
+        <input
+          placeholder="Search product..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* FILTER */}
       <div style={{ marginBottom: "15px" }}>
         <button onClick={() => setFilter("all")}>All</button>
-        <button onClick={() => setFilter("active")} style={{ marginLeft: "10px" }}>
-          Active
-        </button>
-        <button onClick={() => setFilter("removed")} style={{ marginLeft: "10px" }}>
-          Removed
-        </button>
+        <button onClick={() => setFilter("active")} style={{ marginLeft: "10px" }}>Active</button>
+        <button onClick={() => setFilter("removed")} style={{ marginLeft: "10px" }}>Removed</button>
       </div>
 
       {/* TABLE */}
@@ -156,75 +137,50 @@ function Products() {
         </thead>
 
         <tbody>
-          {products.length === 0 ? (
-            <tr>
-              <td colSpan="5" style={{ textAlign: "center" }}>
-                No products yet
-              </td>
-            </tr>
-          ) : (
-            products
-              // ✅ FILTER LOGIC
-              .filter((item) => {
-                if (filter === "all") return true
-                return item.status === filter
-              })
-              .map((item, index) => {
+          {products
+            .filter((item) => {
+              const matchStatus = filter === "all" ? true : item.status === filter
+              const matchSearch = item.name.toLowerCase().includes(search.toLowerCase())
+              return matchStatus && matchSearch
+            })
+            .map((item, index) => {
 
-                const history = Array.isArray(item.history) ? item.history : []
+              const history = Array.isArray(item.history) ? item.history : []
+              const created = history.find(h => h.action === "created") || history[0]
 
-                const created = history.find(h => h.action === "created") || history[0]
+              const fullHistory = history
+                .map(h => `${h.action.toUpperCase()}: ${h.time}${h.note ? " - " + h.note : ""}`)
+                .join("\n")
 
-                const fullHistory = history
-                  .map(h => `${h.action.toUpperCase()}: ${h.time}${h.note ? " - " + h.note : ""}`)
-                  .join("\n")
+              return (
+                <tr key={index}>
 
-                return (
-                  <tr
-                    key={index}
+                  <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
+                    {item.name}
+                  </td>
+
+                  <td>{item.price}</td>
+                  <td>{item.qty}</td>
+
+                  <td
+                    title={fullHistory}
                     style={{
-                      opacity: item.status === "removed" ? 0.5 : 1,
-                      textDecoration: item.status === "removed" ? "line-through" : "none"
+                      color: item.status === "active" ? "green" : "red",
+                      fontWeight: "bold"
                     }}
                   >
+                    {item.status}
+                  </td>
 
-                    {/* NAME */}
-                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                      {item.name}
-                    </td>
+                  <td title={fullHistory}>
+                    <button onClick={() => toggleStatus(index)}>
+                      {item.status === "active" ? "Remove" : "Restore"}
+                    </button>
+                  </td>
 
-                    {/* PRICE */}
-                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                      {item.price}
-                    </td>
-
-                    {/* QTY */}
-                    <td title={created ? `Created: ${created.time}\nNote: ${created.note || "None"}` : ""}>
-                      {item.qty}
-                    </td>
-
-                    {/* STATUS */}
-                    <td
-                      title={fullHistory}
-                      style={{
-                        color: item.status === "active" ? "green" : "red",
-                        fontWeight: "bold"
-                      }}
-                    >
-                      {item.status === "active" ? "Active" : "Removed"}
-                    </td>
-
-                    {/* ACTION */}
-                    <td title={fullHistory}>
-                      <button onClick={() => toggleStatus(index)}>
-                        {item.status === "active" ? "Remove" : "Restore"}
-                      </button>
-                    </td>
-
-                  </tr>
-                )
-              })
-          )}
+                </tr>
+              )
+            })}
         </tbody>
       </table>
     </main>
