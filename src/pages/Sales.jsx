@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getSales, addSale } from '../utils/sales'
+import { getSales, addSale, saveSales } from '../utils/sales'
 
 function Sales() {
   const [sales, setSales] = useState([])
   const [products, setProducts] = useState([])
+
   const [selectedIndex, setSelectedIndex] = useState('')
   const [qty, setQty] = useState(1)
 
@@ -15,23 +16,23 @@ function Sales() {
     const salesData = getSales()
     setSales(salesData)
 
-    const productsData = JSON.parse(localStorage.getItem("products") || "[]")
-    setProducts(productsData)
+    const savedProducts = localStorage.getItem("products")
+    const parsed = savedProducts ? JSON.parse(savedProducts) : []
+    setProducts(Array.isArray(parsed) ? parsed : [])
   }
 
-  const activeProducts = products.filter(p => p.status === "active")
+  const activeProducts = products.filter(
+    (item) => item.status === "active"
+  )
 
-  // ✅ SELL PRODUCT (FIXED + CLEAN)
+  // SELL PRODUCT
   const sellProduct = () => {
     if (selectedIndex === '') {
       alert("Select product")
       return
     }
 
-    const product = activeProducts.find((_, i) => i == selectedIndex)
-
-    if (!product) return
-
+    const product = activeProducts[selectedIndex]
     const quantity = Number(qty)
 
     if (quantity <= 0) {
@@ -50,134 +51,202 @@ function Sales() {
       quantity,
       unitPrice: Number(product.price),
       totalPrice: Number(product.price) * quantity,
-      date: new Date().toISOString()
+      date: new Date().toLocaleString()
     }
 
     addSale(sale)
 
-    // update stock
     const updated = [...products]
-    const realIndex = updated.findIndex(p => p.name === product.name)
 
-    updated[realIndex] = {
-      ...updated[realIndex],
-      qty: Number(updated[realIndex].qty) - quantity,
-      history: [
-        ...(updated[realIndex].history || []),
-        {
-          action: "sold",
-          time: new Date().toLocaleString(),
-          note: `Sold ${quantity}`
-        }
-      ]
-    }
+    const realIndex = products.findIndex(
+      (p) => p.name === product.name
+    )
 
-    localStorage.setItem("products", JSON.stringify(updated))
+    updated[realIndex].qty =
+      Number(updated[realIndex].qty) - quantity
+
+    localStorage.setItem(
+      "products",
+      JSON.stringify(updated)
+    )
 
     setQty(1)
     setSelectedIndex('')
     loadData()
   }
 
+  // UNDO SALE
+  const undoSale = (saleId) => {
+    const targetSale = sales.find(
+      (item) => item.id === saleId
+    )
+
+    if (!targetSale) return
+
+    const ok = window.confirm(
+      `Undo sale of ${targetSale.productName}?`
+    )
+
+    if (!ok) return
+
+    // Restore stock
+    const updatedProducts = [...products]
+
+    const productIndex = updatedProducts.findIndex(
+      (p) => p.name === targetSale.productName
+    )
+
+    if (productIndex !== -1) {
+      updatedProducts[productIndex].qty =
+        Number(updatedProducts[productIndex].qty) +
+        Number(targetSale.quantity)
+
+      localStorage.setItem(
+        "products",
+        JSON.stringify(updatedProducts)
+      )
+    }
+
+    // Remove sale
+    const updatedSales = sales.filter(
+      (item) => item.id !== saleId
+    )
+
+    saveSales(updatedSales)
+
+    loadData()
+  }
+
   const totalRevenue = sales.reduce(
-    (sum, s) => sum + Number(s.totalPrice || 0),
+    (sum, item) => sum + Number(item.totalPrice),
     0
-  )
-
-  const today = new Date().toDateString()
-
-  const todaySales = sales.filter(
-    s => new Date(s.date).toDateString() === today
   )
 
   return (
     <main style={styles.page}>
-      <h2 style={styles.title}>Sales System</h2>
+      <h2 style={styles.title}>Sales Dashboard</h2>
 
-      {/* CARDS */}
+      {/* TOP CARDS */}
       <div style={styles.grid}>
         <div style={styles.card}>
-          <h4>Total Revenue</h4>
-          <p style={styles.value}>Rs {totalRevenue}</p>
+          <p>Total Sales</p>
+          <h2>{sales.length}</h2>
         </div>
 
         <div style={styles.card}>
-          <h4>Total Sales</h4>
-          <p style={styles.value}>{sales.length}</p>
-        </div>
-
-        <div style={styles.card}>
-          <h4>Today Sales</h4>
-          <p style={styles.value}>{todaySales.length}</p>
+          <p>Total Revenue</p>
+          <h2>Rs. {totalRevenue}</h2>
         </div>
       </div>
 
-      {/* SELL BOX */}
-      <div style={styles.sellBox}>
+      {/* QUICK SELL */}
+      <div style={styles.sellCard}>
         <h3>Quick Sell</h3>
 
-        <div style={styles.row}>
-          <select
-            value={selectedIndex}
-            onChange={(e) => setSelectedIndex(e.target.value)}
-            style={styles.input}
+        <select
+          value={selectedIndex}
+          onChange={(e) =>
+            setSelectedIndex(e.target.value)
+          }
+          style={styles.input}
+        >
+          <option value="">
+            Select Product
+          </option>
+
+          {activeProducts.map((item, index) => (
+            <option
+              key={index}
+              value={index}
+            >
+              {item.name} (Stock {item.qty})
+            </option>
+          ))}
+        </select>
+
+        <div style={styles.qtyRow}>
+          <button
+            style={styles.qtyBtn}
+            onClick={() =>
+              setQty(Math.max(1, qty - 1))
+            }
           >
-            <option value="">Select Product</option>
-            {activeProducts.map((p, i) => (
-              <option key={i} value={i}>
-                {p.name} (Stock: {p.qty})
-              </option>
-            ))}
-          </select>
+            -
+          </button>
 
           <input
             type="number"
-            min="1"
             value={qty}
-            onChange={(e) => setQty(e.target.value)}
-            style={{ ...styles.input, width: "90px" }}
+            onChange={(e) =>
+              setQty(Number(e.target.value))
+            }
+            style={styles.qtyInput}
           />
 
-          <button onClick={sellProduct} style={styles.button}>
-            Sell
+          <button
+            style={styles.qtyBtn}
+            onClick={() =>
+              setQty(qty + 1)
+            }
+          >
+            +
           </button>
         </div>
+
+        <button
+          onClick={sellProduct}
+          style={styles.sellBtn}
+        >
+          Sell Now
+        </button>
       </div>
 
-      {/* TABLE */}
-      <div style={styles.tableBox}>
+      {/* SALES TABLE */}
+      <div style={styles.tableWrap}>
         <h3>Recent Sales</h3>
 
         <table style={styles.table}>
           <thead>
-            <tr style={styles.head}>
+            <tr>
               <th>Product</th>
               <th>Qty</th>
               <th>Total</th>
               <th>Date</th>
+              <th>Action</th>
             </tr>
           </thead>
 
           <tbody>
             {sales.length === 0 ? (
               <tr>
-                <td colSpan="4" style={styles.empty}>
-                  No sales yet
+                <td colSpan="5">
+                  No sales found
                 </td>
               </tr>
             ) : (
-              sales.slice(-10).reverse().map((s, i) => (
-                <tr key={i} style={styles.row}>
-                  <td>{s.productName}</td>
-                  <td>{s.quantity}</td>
-                  <td style={{ color: "#38bdf8", fontWeight: "bold" }}>
-                    Rs {s.totalPrice}
-                  </td>
-                  <td style={{ color: "#94a3b8" }}>
-                    {new Date(s.date).toLocaleString()}
-                  </td>
-                </tr>
-              ))
+              sales
+                .slice()
+                .reverse()
+                .map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.productName}</td>
+                    <td>{item.quantity}</td>
+                    <td>
+                      Rs. {item.totalPrice}
+                    </td>
+                    <td>{item.date}</td>
+                    <td>
+                      <button
+                        style={styles.undoBtn}
+                        onClick={() =>
+                          undoSale(item.id)
+                        }
+                      >
+                        Undo
+                      </button>
+                    </td>
+                  </tr>
+                ))
             )}
           </tbody>
         </table>
@@ -186,7 +255,6 @@ function Sales() {
   )
 }
 
-/* DARK MODERN UI */
 const styles = {
   page: {
     padding: "20px",
@@ -196,88 +264,80 @@ const styles = {
   },
 
   title: {
-    marginBottom: "15px"
+    marginBottom: "20px"
   },
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-    gap: "12px",
-    marginBottom: "20px"
+    gridTemplateColumns:
+      "repeat(auto-fit,minmax(220px,1fr))",
+    gap: "15px"
   },
 
   card: {
     background: "#1e293b",
-    padding: "12px",
-    borderRadius: "10px",
-    border: "1px solid #334155"
-  },
-
-  value: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    marginTop: "5px",
-    color: "#38bdf8"
-  },
-
-  sellBox: {
-    background: "#1e293b",
     padding: "15px",
-    borderRadius: "10px",
-    marginBottom: "15px",
-    border: "1px solid #334155"
+    borderRadius: "12px"
   },
 
-  row: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap"
+  sellCard: {
+    marginTop: "20px",
+    background: "#1e293b",
+    padding: "20px",
+    borderRadius: "12px"
   },
 
   input: {
+    width: "100%",
     padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #334155",
-    background: "#0f172a",
-    color: "white",
-    flex: 1
+    marginTop: "10px",
+    borderRadius: "8px"
   },
 
-  button: {
-    padding: "10px 14px",
-    background: "#2563eb",
+  qtyRow: {
+    display: "flex",
+    gap: "10px",
+    marginTop: "15px"
+  },
+
+  qtyBtn: {
+    width: "45px",
+    fontSize: "20px"
+  },
+
+  qtyInput: {
+    flex: 1,
+    textAlign: "center"
+  },
+
+  sellBtn: {
+    width: "100%",
+    padding: "12px",
+    marginTop: "15px",
+    background: "#22c55e",
     color: "white",
     border: "none",
-    borderRadius: "6px",
-    cursor: "pointer"
+    borderRadius: "8px"
   },
 
-  tableBox: {
+  tableWrap: {
+    marginTop: "25px",
     background: "#1e293b",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "1px solid #334155"
+    padding: "20px",
+    borderRadius: "12px"
   },
 
   table: {
     width: "100%",
-    borderCollapse: "collapse",
-    color: "white"
+    marginTop: "15px"
   },
 
-  head: {
-    textAlign: "left",
-    color: "#94a3b8"
-  },
-
-  row: {
-    borderTop: "1px solid #334155"
-  },
-
-  empty: {
-    textAlign: "center",
-    padding: "20px",
-    color: "#94a3b8"
+  undoBtn: {
+    background: "#f97316",
+    color: "white",
+    border: "none",
+    padding: "6px 12px",
+    borderRadius: "6px"
   }
 }
 
