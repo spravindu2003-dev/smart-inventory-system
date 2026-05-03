@@ -34,11 +34,14 @@ function ActivityLog() {
   }
 
   const getColor = (action) => {
+    if (action === "created") return "gray"
+    if (action === "edited") return "purple"
     if (action === "removed") return "red"
     if (action === "restored") return "green"
     if (action === "sold") return "blue"
     if (action === "undo sale") return "orange"
-    return "gray"
+
+    return "black"
   }
 
   const filteredLogs = logs.filter((item) => {
@@ -52,13 +55,22 @@ function ActivityLog() {
 
       {/* FILTERS */}
       <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => setFilter("all")}>All</button>
+        <button onClick={() => setFilter("all")}>
+          All
+        </button>
 
         <button
           onClick={() => setFilter("created")}
           style={{ marginLeft: "10px" }}
         >
           Created
+        </button>
+
+        <button
+          onClick={() => setFilter("edited")}
+          style={{ marginLeft: "10px" }}
+        >
+          Edited
         </button>
 
         <button
@@ -119,6 +131,7 @@ function ActivityLog() {
             filteredLogs.map((item, index) => (
               <tr key={index}>
                 <td>{item.time}</td>
+
                 <td>{item.product}</td>
 
                 <td
@@ -131,9 +144,7 @@ function ActivityLog() {
                   {item.action}
                 </td>
 
-                <td>
-                  {item.note || "-"}
-                </td>
+                <td>{item.note || "-"}</td>
               </tr>
             ))
           )}
@@ -144,4 +155,3 @@ function ActivityLog() {
 }
 
 export default ActivityLog
-
