@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { addSale } from '../utils/sales'
 
 function Dashboard() {
   const [products, setProducts] = useState([])
@@ -60,6 +61,20 @@ function Dashboard() {
     )
 
     if (!ok) return
+
+    // 🔥 STEP 1: CREATE SALE RECORD (NEW)
+    const saleRecord = {
+      id: Date.now(),
+      productId: realIndex,
+      productName: item.name,
+      quantity: qtyToSell,
+      unitPrice: Number(item.price),
+      totalPrice: Number(item.price) * qtyToSell,
+      date: new Date().toISOString()
+    }
+
+    // 🔥 STEP 2: SAVE TO SALES SYSTEM
+    addSale(saleRecord)
 
     const history = Array.isArray(item.history)
       ? item.history
@@ -149,10 +164,7 @@ function Dashboard() {
           borderRadius: "10px"
         }}>
           <h3>Total Products</h3>
-          <p style={{
-            fontSize: "28px",
-            fontWeight: "bold"
-          }}>
+          <p style={{ fontSize: "28px", fontWeight: "bold" }}>
             {totalProducts}
           </p>
         </div>
@@ -230,10 +242,7 @@ function Dashboard() {
           </option>
 
           {activeProducts.map((item, index) => (
-            <option
-              key={index}
-              value={index}
-            >
+            <option key={index} value={index}>
               {item.name}
             </option>
           ))}
@@ -241,28 +250,22 @@ function Dashboard() {
 
         {selectedProduct && (
           <div style={{ marginTop: "20px" }}>
-            <p>
-              Price: {selectedProduct.price}
-            </p>
+            <p>Price: {selectedProduct.price}</p>
 
-            <p
-              style={{
-                color:
-                  Number(selectedProduct.qty) <= 5
-                    ? "red"
-                    : "green",
-                fontWeight: "bold"
-              }}
-            >
+            <p style={{
+              color:
+                Number(selectedProduct.qty) <= 5
+                  ? "red"
+                  : "green",
+              fontWeight: "bold"
+            }}>
               Stock: {selectedProduct.qty}
             </p>
 
             <div style={{ marginTop: "15px" }}>
               <button
                 onClick={() =>
-                  setSellQty(
-                    Math.max(1, sellQty - 1)
-                  )
+                  setSellQty(Math.max(1, sellQty - 1))
                 }
               >
                 -
@@ -273,9 +276,7 @@ function Dashboard() {
                 min="1"
                 value={sellQty}
                 onChange={(e) =>
-                  setSellQty(
-                    Number(e.target.value)
-                  )
+                  setSellQty(Number(e.target.value))
                 }
                 style={{
                   width: "60px",
