@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
+import '../styles/Products.css'
 
 function Products() {
   const [products, setProducts] = useState([])
 
-  // inputs
   const [name, setName] = useState("")
   const [price, setPrice] = useState("")
   const [qty, setQty] = useState("")
@@ -13,28 +13,19 @@ function Products() {
   const [search, setSearch] = useState("")
   const [filter, setFilter] = useState("all")
 
-  // SAFE LOAD
+  // LOAD
   useEffect(() => {
-    loadProducts()
+    const saved = localStorage.getItem("products")
+    setProducts(saved ? JSON.parse(saved) : [])
   }, [])
 
-  const loadProducts = () => {
-    try {
-      const saved = localStorage.getItem("products")
-      const parsed = saved ? JSON.parse(saved) : []
-      setProducts(Array.isArray(parsed) ? parsed : [])
-    } catch {
-      setProducts([])
-    }
-  }
-
-  // SAFE SAVE
-  const saveProducts = (data) => {
+  // SAVE
+  const save = (data) => {
     localStorage.setItem("products", JSON.stringify(data))
     setProducts(data)
   }
 
-  // ADD PRODUCT
+  // ADD
   const addProduct = () => {
     if (!name || !price || !qty) return
 
@@ -54,7 +45,7 @@ function Products() {
       ]
     }
 
-    saveProducts([...products, newProduct])
+    save([...products, newProduct])
 
     setName("")
     setPrice("")
@@ -63,24 +54,22 @@ function Products() {
     setMinQty(5)
   }
 
-  // EDIT PRODUCT
+  // EDIT
   const editProduct = (index) => {
     const updated = [...products]
     const item = updated[index]
 
-    const newName = prompt("Edit Name:", item.name)
+    const newName = prompt("Name:", item.name)
     if (newName === null) return
 
-    const newPrice = prompt("Edit Price:", item.price)
+    const newPrice = prompt("Price:", item.price)
     if (newPrice === null) return
 
-    const newQty = prompt("Edit Qty:", item.qty)
+    const newQty = prompt("Qty:", item.qty)
     if (newQty === null) return
 
-    const newNote = prompt("Edit Note:", item.note || "")
+    const newNote = prompt("Note:", item.note || "")
     if (newNote === null) return
-
-    const history = item.history || []
 
     updated[index] = {
       ...item,
@@ -89,52 +78,53 @@ function Products() {
       qty: Number(newQty),
       note: newNote,
       history: [
-        ...history,
+        ...(item.history || []),
         {
           action: "edited",
           time: new Date().toLocaleString(),
-          note: "Product updated"
+          note: "Product edited"
         }
       ]
     }
 
-    saveProducts(updated)
+    save(updated)
   }
 
-  // REMOVE / RESTORE (WITH REASON)
+  // TOGGLE
   const toggleStatus = (index) => {
     const updated = [...products]
     const item = updated[index]
 
     const reason = prompt(
       item.status === "active"
-        ? "Why remove this product?"
-        : "Why restore this product?"
+        ? "Why remove?"
+        : "Why restore?"
     )
-
-    const history = item.history || []
 
     updated[index] = {
       ...item,
-      status: item.status === "active" ? "removed" : "active",
+      status: item.status === "active"
+        ? "removed"
+        : "active",
       history: [
-        ...history,
+        ...(item.history || []),
         {
-          action: item.status === "active" ? "removed" : "restored",
+          action: item.status === "active"
+            ? "removed"
+            : "restored",
           time: new Date().toLocaleString(),
           note: reason || ""
         }
       ]
     }
 
-    saveProducts(updated)
+    save(updated)
   }
 
-  // FILTER LOGIC
+  // FILTER
   const filtered = products.filter((p) => {
-    const matchSearch = p.name
-      .toLowerCase()
-      .includes(search.toLowerCase())
+    const matchSearch =
+      p.name.toLowerCase().includes(search.toLowerCase())
 
     const matchFilter =
       filter === "all" ? true : p.status === filter
@@ -143,134 +133,157 @@ function Products() {
   })
 
   return (
-    <main style={styles.page}>
-      <h2>Products</h2>
+    <main className="products-page">
 
-      {/* ADD PRODUCT */}
-      <div style={styles.form}>
-        <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} />
-        <input placeholder="Qty" value={qty} onChange={(e) => setQty(e.target.value)} />
-        <input placeholder="Min Qty" value={minQty} onChange={(e) => setMinQty(e.target.value)} />
-        <input placeholder="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
+      <h2 className="products-title">
+        Products
+      </h2>
 
-        <button onClick={addProduct}>Add</button>
+      {/* FORM */}
+      <div className="products-form">
+
+        <input placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input placeholder="Price"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+
+        <input placeholder="Qty"
+          value={qty}
+          onChange={(e) => setQty(e.target.value)}
+        />
+
+        <input placeholder="Min Qty"
+          value={minQty}
+          onChange={(e) => setMinQty(e.target.value)}
+        />
+
+        <input placeholder="Note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+
+        <button
+          className="products-add-btn"
+          onClick={addProduct}
+        >
+          Add
+        </button>
+
       </div>
 
-      {/* SEARCH + FILTER */}
-      <div style={styles.controls}>
+      {/* CONTROLS */}
+      <div className="products-controls">
+
         <input
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <button onClick={() => setFilter("all")}>All</button>
-        <button onClick={() => setFilter("active")}>Active</button>
-        <button onClick={() => setFilter("removed")}>Removed</button>
+        <button onClick={() => setFilter("all")}>
+          All
+        </button>
+
+        <button onClick={() => setFilter("active")}>
+          Active
+        </button>
+
+        <button onClick={() => setFilter("removed")}>
+          Removed
+        </button>
+
       </div>
 
-      {/* PRODUCT LIST */}
-      <div style={styles.list}>
+      {/* LIST */}
+      <div className="products-list">
+
         {filtered.map((p, i) => {
+
           const lowStock =
             p.status === "active" &&
             Number(p.qty) <= Number(p.minQty || 5)
 
           return (
-            <div key={i} style={styles.card}>
+            <div
+              key={i}
+              className="products-card"
+            >
 
-              {/* NAME (HOVER INFO RESTORED) */}
-              <div
-                title={`Time: ${p.history?.[0]?.time || "-"}\nNote: ${p.note || "No note"}`}
-              >
-                <h3 style={{ margin: 0 }}>{p.name}</h3>
+              {/* LEFT */}
+              <div className="products-left">
+
+                <h3>{p.name}</h3>
+
                 <small>Rs {p.price}</small>
+
+                <div className="products-note">
+                  {p.note || "No note"}
+                </div>
+
               </div>
 
               {/* STOCK */}
-              <div>
-                <p style={{ margin: 0, color: lowStock ? "red" : "lightgreen" }}>
-                  Stock: {p.qty}
-                </p>
-                <small>Min: {p.minQty}</small>
+              <div className="products-stock">
+
+                <div className="products-stock-value">
+                  {p.qty}
+                </div>
+
+                <div className="products-min">
+                  Min: {p.minQty}
+                </div>
 
                 {lowStock && (
-                  <div style={{ color: "orange" }}>⚠ LOW STOCK</div>
+                  <div className="products-low">
+                    ⚠ LOW
+                  </div>
                 )}
+
               </div>
 
               {/* STATUS */}
-              <div>
-                <span
-                  title={
-                    p.history
-                      ?.filter(h => h.action === "removed" || h.action === "restored")
-                      ?.map(h => `${h.time} - ${h.note}`)
-                      .join("\n") || ""
-                  }
-                  style={{
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                    background: p.status === "active" ? "#14532d" : "#450a0a",
-                    fontSize: "12px"
-                  }}
-                >
-                  {p.status.toUpperCase()}
-                </span>
+              <div
+                className={`products-status ${
+                  p.status === "removed"
+                    ? "removed"
+                    : ""
+                }`}
+              >
+                {p.status}
               </div>
 
               {/* ACTIONS */}
-              <div style={{ display: "flex", gap: "5px" }}>
-                <button onClick={() => editProduct(i)}>Edit</button>
-                <button onClick={() => toggleStatus(i)}>
-                  {p.status === "active" ? "Remove" : "Restore"}
+              <div className="products-actions">
+
+                <button
+                  onClick={() => editProduct(i)}
+                >
+                  Edit
                 </button>
+
+                <button
+                  onClick={() => toggleStatus(i)}
+                >
+                  {p.status === "active"
+                    ? "Remove"
+                    : "Restore"}
+                </button>
+
               </div>
 
             </div>
           )
         })}
+
       </div>
+
     </main>
   )
-}
-
-const styles = {
-  page: {
-    padding: "20px",
-    background: "#0f172a",
-    minHeight: "100vh",
-    color: "white"
-  },
-
-  form: {
-    display: "flex",
-    gap: "10px",
-    flexWrap: "wrap",
-    marginBottom: "10px"
-  },
-
-  controls: {
-    display: "flex",
-    gap: "10px",
-    marginBottom: "15px"
-  },
-
-  list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px"
-  },
-
-  card: {
-    background: "#1e293b",
-    padding: "12px",
-    borderRadius: "10px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center"
-  }
 }
 
 export default Products

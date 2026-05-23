@@ -1,0 +1,129 @@
+.sales-container {
+  padding: 20px;
+  background: #0f172a;
+  min-height: 100vh;
+  color: white;
+}
+
+/* HEADER */
+.sales-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sales-header span {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+/* GRID */
+.sales-grid-modern {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* PANEL */
+.sales-panel {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+/* SEARCH */
+.sales-search {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+}
+
+/* PRODUCT LIST */
+.sales-product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.product-card:hover {
+  background: #334155;
+}
+
+.product-card.active {
+  border: 1px solid #22c55e;
+}
+
+/* SELECTED BOX */
+.selected-box {
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* QTY */
+.qty-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.qty-box button {
+  width: 40px;
+  font-size: 20px;
+}
+
+.qty-box input {
+  flex: 1;
+  text-align: center;
+}
+
+/* SELL BUTTON */
+.sell-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* HISTORY */
+.sales-history {
+  margin-top: 20px;
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.sale-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #334155;
+}
+
+.sale-row button {
+  background: #f97316;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  color: white;
+}

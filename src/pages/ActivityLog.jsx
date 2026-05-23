@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import "../styles/ActivityLog.css"
 
 function ActivityLog() {
   const [logs, setLogs] = useState([])
@@ -19,7 +20,6 @@ function ActivityLog() {
         ? product.history
         : []
 
-      // NORMAL HISTORY LOGS
       history.forEach((item) => {
         allLogs.push({
           product: product.name,
@@ -29,7 +29,6 @@ function ActivityLog() {
         })
       })
 
-      // 🟡 LOW STOCK LOG (SMART FEATURE)
       if (
         product.status === "active" &&
         Number(product.qty) <= Number(product.minQty || 5)
@@ -43,7 +42,6 @@ function ActivityLog() {
       }
     })
 
-    // latest first
     allLogs.reverse()
     setLogs(allLogs)
   }
@@ -56,7 +54,6 @@ function ActivityLog() {
     if (action === "sold") return "#3b82f6"
     if (action === "undo sale") return "#f97316"
     if (action === "low stock") return "#ff4d4f"
-
     return "#000"
   }
 
@@ -66,16 +63,11 @@ function ActivityLog() {
   })
 
   return (
-    <main style={{
-      padding: "20px",
-      background: "#0f172a",
-      minHeight: "100vh",
-      color: "white"
-    }}>
+    <main className="activity-page">
       <h2>Activity Log</h2>
 
       {/* FILTERS */}
-      <div style={{ marginBottom: "20px" }}>
+      <div className="activity-filters">
         {[
           "all",
           "created",
@@ -89,15 +81,7 @@ function ActivityLog() {
           <button
             key={i}
             onClick={() => setFilter(type)}
-            style={{
-              marginRight: "8px",
-              padding: "6px 10px",
-              background: "#1e293b",
-              color: "white",
-              border: "1px solid #334155",
-              borderRadius: "6px",
-              cursor: "pointer"
-            }}
+            className="activity-filter-btn"
           >
             {type}
           </button>
@@ -105,17 +89,10 @@ function ActivityLog() {
       </div>
 
       {/* TABLE */}
-      <div style={{
-        background: "#1e293b",
-        borderRadius: "10px",
-        padding: "10px"
-      }}>
-        <table style={{
-          width: "100%",
-          borderCollapse: "collapse"
-        }}>
+      <div className="activity-table-wrap">
+        <table className="activity-table">
           <thead>
-            <tr style={{ color: "#94a3b8", textAlign: "left" }}>
+            <tr>
               <th>Time</th>
               <th>Product</th>
               <th>Action</th>
@@ -126,20 +103,20 @@ function ActivityLog() {
           <tbody>
             {filteredLogs.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center", padding: "20px", color: "#94a3b8" }}>
+                <td colSpan="4" className="activity-empty">
                   No logs found
                 </td>
               </tr>
             ) : (
               filteredLogs.map((item, index) => (
-                <tr key={index} style={{ borderTop: "1px solid #334155" }}>
-                  <td style={{ padding: "8px" }}>{item.time}</td>
+                <tr key={index} className="activity-row">
+                  <td className="activity-cell">{item.time}</td>
 
-                  <td style={{ padding: "8px" }}>{item.product}</td>
+                  <td className="activity-cell">{item.product}</td>
 
                   <td
+                    className="activity-cell"
                     style={{
-                      padding: "8px",
                       color: getColor(item.action),
                       fontWeight: "bold",
                       textTransform: "capitalize"
@@ -148,7 +125,7 @@ function ActivityLog() {
                     {item.action}
                   </td>
 
-                  <td style={{ padding: "8px", color: "#cbd5e1" }}>
+                  <td className="activity-cell activity-note">
                     {item.note || "-"}
                   </td>
                 </tr>

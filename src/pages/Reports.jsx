@@ -11,6 +11,8 @@ import {
   ResponsiveContainer
 } from "recharts"
 
+import "../styles/Reports.css"
+
 function Reports() {
   const [sales, setSales] = useState([])
   const [products, setProducts] = useState([])
@@ -28,7 +30,6 @@ function Reports() {
     }
   }, [])
 
-  // SAFE GROUPING
   const revenueMap = {}
 
   sales.forEach((s) => {
@@ -57,36 +58,35 @@ function Reports() {
   )
 
   return (
-    <main style={styles.page}>
+    <main className="reports-page">
       <h2>Reports</h2>
 
-      {/* EMPTY CHECK */}
       {sales.length === 0 && products.length === 0 ? (
-        <div style={styles.empty}>
+        <div className="reports-empty">
           ⚠ No data found. Add products and sales first.
         </div>
       ) : (
         <>
           {/* CARDS */}
-          <div style={styles.grid}>
-            <div style={styles.card}>
+          <div className="reports-grid">
+            <div className="reports-card">
               <h4>Total Revenue</h4>
-              <p style={styles.value}>Rs {totalRevenue}</p>
+              <p className="reports-value">Rs {totalRevenue}</p>
             </div>
 
-            <div style={styles.card}>
+            <div className="reports-card">
               <h4>Total Sales</h4>
-              <p style={styles.value}>{sales.length}</p>
+              <p className="reports-value">{sales.length}</p>
             </div>
 
-            <div style={styles.card}>
+            <div className="reports-card">
               <h4>Products</h4>
-              <p style={styles.value}>{products.length}</p>
+              <p className="reports-value">{products.length}</p>
             </div>
           </div>
 
           {/* CHART 1 */}
-          <div style={styles.box}>
+          <div className="reports-box">
             <h3>Revenue Chart</h3>
 
             {revenueData.length === 0 ? (
@@ -109,7 +109,7 @@ function Reports() {
           </div>
 
           {/* CHART 2 */}
-          <div style={styles.box}>
+          <div className="reports-box">
             <h3>Stock Chart</h3>
 
             {stockData.length === 0 ? (
@@ -130,48 +130,6 @@ function Reports() {
       )}
     </main>
   )
-}
-
-const styles = {
-  page: {
-    padding: "20px",
-    background: "#0f172a",
-    minHeight: "100vh",
-    color: "white"
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-    gap: "12px",
-    marginBottom: "20px"
-  },
-
-  card: {
-    background: "#1e293b",
-    padding: "12px",
-    borderRadius: "10px"
-  },
-
-  value: {
-    fontSize: "20px",
-    fontWeight: "bold",
-    color: "#38bdf8"
-  },
-
-  box: {
-    background: "#1e293b",
-    padding: "15px",
-    borderRadius: "10px",
-    marginBottom: "15px"
-  },
-
-  empty: {
-    padding: "20px",
-    background: "#1e293b",
-    borderRadius: "10px",
-    color: "#fbbf24"
-  }
 }
 
 export default Reports

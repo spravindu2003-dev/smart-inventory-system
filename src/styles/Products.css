@@ -1,0 +1,93 @@
+.products-page {
+  padding: 20px;
+  background: #0f172a;
+  min-height: 100vh;
+  color: white;
+}
+
+.products-title {
+  margin-bottom: 10px;
+}
+
+.products-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.products-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.products-card {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.products-left h3 {
+  margin: 0;
+}
+
+.products-note {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #94a3b8;
+}
+
+.products-stock {
+  text-align: center;
+}
+
+.products-stock-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.products-min {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.products-status {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #14532d;
+}
+
+.products-status.removed {
+  background: #450a0a;
+}
+
+.products-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.products-add-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.products-low {
+  margin-top: 5px;
+  color: #f97316;
+  font-weight: bold;
+  font-size: 12px;
+}

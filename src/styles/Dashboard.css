@@ -1,0 +1,39 @@
+.dashboard-page {
+  padding: 20px;
+  background: #0f172a;
+  min-height: 100vh;
+  color: white;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.dashboard-card {
+  padding: 15px;
+  background: #1e293b;
+  border-radius: 10px;
+  border: 1px solid #334155;
+}
+
+.dashboard-number {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.low-stock-section {
+  margin-top: 30px;
+}
+
+.alert-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: #2a1212;
+  border: 1px solid #ff4d4f;
+  border-radius: 8px;
+  color: #ff4d4f;
+}

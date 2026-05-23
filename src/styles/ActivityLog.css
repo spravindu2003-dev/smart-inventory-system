@@ -1,0 +1,61 @@
+/* Activity Log Page */
+.activity-page {
+  padding: 20px;
+  background: #0f172a;
+  min-height: 100vh;
+  color: white;
+}
+
+/* FILTER BAR */
+.activity-filters {
+  margin-bottom: 20px;
+}
+
+.activity-filter-btn {
+  margin-right: 8px;
+  padding: 6px 10px;
+  background: #1e293b;
+  color: white;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* TABLE CONTAINER */
+.activity-table-wrap {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* HEADER */
+.activity-table thead tr {
+  color: #94a3b8;
+  text-align: left;
+}
+
+/* ROW */
+.activity-row {
+  border-top: 1px solid #334155;
+}
+
+/* CELLS */
+.activity-cell {
+  padding: 8px;
+}
+
+.activity-note {
+  color: #cbd5e1;
+}
+
+/* EMPTY STATE */
+.activity-empty {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+}

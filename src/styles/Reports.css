@@ -1,0 +1,44 @@
+/* Reports Page */
+.reports-page {
+  padding: 20px;
+  background: #0f172a;
+  min-height: 100vh;
+  color: white;
+}
+
+/* GRID */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* CARD */
+.reports-card {
+  background: #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.reports-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+/* BOX */
+.reports-box {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+/* EMPTY STATE */
+.reports-empty {
+  padding: 20px;
+  background: #1e293b;
+  border-radius: 10px;
+  color: #fbbf24;
+}
