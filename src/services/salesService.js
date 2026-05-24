@@ -13,15 +13,9 @@ export const SalesService = {
   },
 
   addSale(sale) {
-    const sales =
-      Storage.get(SALES_KEY)
-
+    const sales = Storage.get(SALES_KEY)
     sales.push(sale)
-
-    Storage.set(
-      SALES_KEY,
-      sales
-    )
+    Storage.set(SALES_KEY, sales)
   }
 
 }

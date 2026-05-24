@@ -13,15 +13,9 @@ export const ProductService = {
   },
 
   addProduct(product) {
-    const products =
-      Storage.get(PRODUCT_KEY)
-
+    const products = Storage.get(PRODUCT_KEY)
     products.push(product)
-
-    Storage.set(
-      PRODUCT_KEY,
-      products
-    )
+    Storage.set(PRODUCT_KEY, products)
   }
 
 }
