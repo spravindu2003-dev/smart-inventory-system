@@ -1,52 +1,96 @@
 import { useEffect, useState } from 'react'
 import '../styles/Products.css'
 
+import {
+  ProductService
+} from '../services/productService'
+
 function Products() {
-  const [products, setProducts] = useState([])
 
-  const [name, setName] = useState("")
-  const [price, setPrice] = useState("")
-  const [qty, setQty] = useState("")
-  const [note, setNote] = useState("")
-  const [minQty, setMinQty] = useState(5)
+  const [products, setProducts] =
+    useState([])
 
-  const [search, setSearch] = useState("")
-  const [filter, setFilter] = useState("all")
+  // FORM STATES
+  const [name, setName] =
+    useState("")
 
-  // LOAD
+  const [price, setPrice] =
+    useState("")
+
+  const [qty, setQty] =
+    useState("")
+
+  const [note, setNote] =
+    useState("")
+
+  const [minQty, setMinQty] =
+    useState(5)
+
+  // FILTER STATES
+  const [search, setSearch] =
+    useState("")
+
+  const [filter, setFilter] =
+    useState("all")
+
+  // LOAD PRODUCTS
   useEffect(() => {
-    const saved = localStorage.getItem("products")
-    setProducts(saved ? JSON.parse(saved) : [])
+
+    const savedProducts =
+      ProductService.getAllProducts()
+
+    setProducts(savedProducts)
+
   }, [])
 
-  // SAVE
-  const save = (data) => {
-    localStorage.setItem("products", JSON.stringify(data))
+  // SAVE PRODUCTS
+  const saveProducts = (data) => {
+
+    ProductService.saveProducts(data)
+
     setProducts(data)
   }
 
-  // ADD
+  // ADD PRODUCT
   const addProduct = () => {
-    if (!name || !price || !qty) return
+
+    if (!name || !price || !qty) {
+      alert("Please fill all fields")
+      return
+    }
 
     const newProduct = {
+
       name,
+
       price: Number(price),
+
       qty: Number(qty),
+
       minQty: Number(minQty),
+
       note: note || "",
+
       status: "active",
+
       history: [
         {
           action: "created",
-          time: new Date().toLocaleString(),
+          time:
+            new Date().toLocaleString(),
           note: note || ""
         }
       ]
     }
 
-    save([...products, newProduct])
+    const updatedProducts = [
+      ...products,
+      newProduct
+    ]
 
+    saveProducts(updatedProducts)
+
+    // RESET FORM
     setName("")
     setPrice("")
     setQty("")
@@ -54,231 +98,340 @@ function Products() {
     setMinQty(5)
   }
 
-  // EDIT
+  // EDIT PRODUCT
   const editProduct = (index) => {
+
     const updated = [...products]
+
     const item = updated[index]
 
-    const newName = prompt("Name:", item.name)
+    const newName =
+      prompt("Name:", item.name)
+
     if (newName === null) return
 
-    const newPrice = prompt("Price:", item.price)
+    const newPrice =
+      prompt("Price:", item.price)
+
     if (newPrice === null) return
 
-    const newQty = prompt("Qty:", item.qty)
+    const newQty =
+      prompt("Qty:", item.qty)
+
     if (newQty === null) return
 
-    const newNote = prompt("Note:", item.note || "")
+    const newNote =
+      prompt(
+        "Note:",
+        item.note || ""
+      )
+
     if (newNote === null) return
 
+    const history =
+      item.history || []
+
     updated[index] = {
+
       ...item,
+
       name: newName,
+
       price: Number(newPrice),
+
       qty: Number(newQty),
+
       note: newNote,
+
       history: [
-        ...(item.history || []),
+        ...history,
         {
           action: "edited",
-          time: new Date().toLocaleString(),
+          time:
+            new Date().toLocaleString(),
           note: "Product edited"
         }
       ]
     }
 
-    save(updated)
+    saveProducts(updated)
   }
 
-  // TOGGLE
+  // REMOVE / RESTORE
   const toggleStatus = (index) => {
+
     const updated = [...products]
+
     const item = updated[index]
 
     const reason = prompt(
+
       item.status === "active"
         ? "Why remove?"
         : "Why restore?"
+
     )
 
+    const history =
+      item.history || []
+
     updated[index] = {
+
       ...item,
-      status: item.status === "active"
-        ? "removed"
-        : "active",
+
+      status:
+        item.status === "active"
+          ? "removed"
+          : "active",
+
       history: [
-        ...(item.history || []),
+        ...history,
         {
-          action: item.status === "active"
-            ? "removed"
-            : "restored",
-          time: new Date().toLocaleString(),
+          action:
+            item.status === "active"
+              ? "removed"
+              : "restored",
+
+          time:
+            new Date().toLocaleString(),
+
           note: reason || ""
         }
       ]
     }
 
-    save(updated)
+    saveProducts(updated)
   }
 
-  // FILTER
-  const filtered = products.filter((p) => {
-    const matchSearch =
-      p.name.toLowerCase().includes(search.toLowerCase())
+  // FILTER PRODUCTS
+  const filteredProducts =
+    products.filter((p) => {
 
-    const matchFilter =
-      filter === "all" ? true : p.status === filter
+      const matchSearch =
+        p.name
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          )
 
-    return matchSearch && matchFilter
-  })
+      const matchFilter =
+
+        filter === "all"
+          ? true
+          : p.status === filter
+
+      return (
+        matchSearch &&
+        matchFilter
+      )
+    })
 
   return (
+
     <main className="products-page">
 
       <h2 className="products-title">
         Products
       </h2>
 
-      {/* FORM */}
+      {/* ADD FORM */}
       <div className="products-form">
 
-        <input placeholder="Name"
+        <input
+          type="text"
+          placeholder="Product Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) =>
+            setName(e.target.value)
+          }
         />
 
-        <input placeholder="Price"
+        <input
+          type="number"
+          placeholder="Price"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          onChange={(e) =>
+            setPrice(e.target.value)
+          }
         />
 
-        <input placeholder="Qty"
+        <input
+          type="number"
+          placeholder="Quantity"
           value={qty}
-          onChange={(e) => setQty(e.target.value)}
+          onChange={(e) =>
+            setQty(e.target.value)
+          }
         />
 
-        <input placeholder="Min Qty"
+        <input
+          type="number"
+          placeholder="Minimum Qty"
           value={minQty}
-          onChange={(e) => setMinQty(e.target.value)}
+          onChange={(e) =>
+            setMinQty(e.target.value)
+          }
         />
 
-        <input placeholder="Note"
+        <input
+          type="text"
+          placeholder="Note"
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e) =>
+            setNote(e.target.value)
+          }
         />
 
         <button
           className="products-add-btn"
           onClick={addProduct}
         >
-          Add
+          Add Product
         </button>
 
       </div>
 
-      {/* CONTROLS */}
+      {/* FILTERS */}
       <div className="products-controls">
 
         <input
-          placeholder="Search..."
+          type="text"
+          placeholder="Search product..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
         />
 
-        <button onClick={() => setFilter("all")}>
+        <button
+          onClick={() =>
+            setFilter("all")
+          }
+        >
           All
         </button>
 
-        <button onClick={() => setFilter("active")}>
+        <button
+          onClick={() =>
+            setFilter("active")
+          }
+        >
           Active
         </button>
 
-        <button onClick={() => setFilter("removed")}>
+        <button
+          onClick={() =>
+            setFilter("removed")
+          }
+        >
           Removed
         </button>
 
       </div>
 
-      {/* LIST */}
+      {/* PRODUCT LIST */}
       <div className="products-list">
 
-        {filtered.map((p, i) => {
+        {filteredProducts.map(
+          (p, i) => {
 
-          const lowStock =
-            p.status === "active" &&
-            Number(p.qty) <= Number(p.minQty || 5)
+            const lowStock =
 
-          return (
-            <div
-              key={i}
-              className="products-card"
-            >
+              p.status === "active" &&
 
-              {/* LEFT */}
-              <div className="products-left">
+              Number(p.qty)
+                <=
+              Number(
+                p.minQty || 5
+              )
 
-                <h3>{p.name}</h3>
+            return (
 
-                <small>Rs {p.price}</small>
-
-                <div className="products-note">
-                  {p.note || "No note"}
-                </div>
-
-              </div>
-
-              {/* STOCK */}
-              <div className="products-stock">
-
-                <div className="products-stock-value">
-                  {p.qty}
-                </div>
-
-                <div className="products-min">
-                  Min: {p.minQty}
-                </div>
-
-                {lowStock && (
-                  <div className="products-low">
-                    ⚠ LOW
-                  </div>
-                )}
-
-              </div>
-
-              {/* STATUS */}
               <div
-                className={`products-status ${
-                  p.status === "removed"
-                    ? "removed"
-                    : ""
-                }`}
+                key={i}
+                className="products-card"
               >
-                {p.status}
-              </div>
 
-              {/* ACTIONS */}
-              <div className="products-actions">
+                {/* INFO */}
+                <div>
 
-                <button
-                  onClick={() => editProduct(i)}
+                  <h3>{p.name}</h3>
+
+                  <small>
+                    Rs {p.price}
+                  </small>
+
+                  <div className="products-note">
+
+                    {p.note || "No note"}
+
+                  </div>
+
+                </div>
+
+                {/* STOCK */}
+                <div className="products-stock">
+
+                  <div className="products-qty">
+                    {p.qty}
+                  </div>
+
+                  <div className="products-min">
+
+                    Min: {p.minQty}
+
+                  </div>
+
+                  {lowStock && (
+
+                    <div className="products-low-stock">
+
+                      ⚠ LOW
+
+                    </div>
+
+                  )}
+
+                </div>
+
+                {/* STATUS */}
+                <div
+                  className={
+                    p.status === "active"
+                      ? "products-status-active"
+                      : "products-status-removed"
+                  }
                 >
-                  Edit
-                </button>
+                  {p.status}
+                </div>
 
-                <button
-                  onClick={() => toggleStatus(i)}
-                >
-                  {p.status === "active"
-                    ? "Remove"
-                    : "Restore"}
-                </button>
+                {/* ACTIONS */}
+                <div className="products-actions">
+
+                  <button
+                    onClick={() =>
+                      editProduct(i)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      toggleStatus(i)
+                    }
+                  >
+                    {p.status === "active"
+                      ? "Remove"
+                      : "Restore"}
+                  </button>
+
+                </div>
 
               </div>
-
-            </div>
-          )
-        })}
+            )
+          }
+        )}
 
       </div>
 

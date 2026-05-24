@@ -22,20 +22,52 @@ function Sales() {
     setProducts(Array.isArray(parsed) ? parsed : [])
   }
 
-  const activeProducts = products.filter((p) => p.status === "active")
+  // 🔥 IMPORTANT: HISTORY LOGGER (FIX FOR ACTIVITY LOG)
+  const updateProductHistory = (productName, action, note = "") => {
+    const saved = localStorage.getItem("products")
+    const products = saved ? JSON.parse(saved) : []
+
+    const updated = products.map((p) => {
+      if (p.name === productName) {
+        return {
+          ...p,
+          history: [
+            ...(p.history || []),
+            {
+              action,
+              time: new Date().toLocaleString(),
+              note
+            }
+          ]
+        }
+      }
+      return p
+    })
+
+    localStorage.setItem("products", JSON.stringify(updated))
+    setProducts(updated)
+  }
+
+  const saveProducts = (data) => {
+    localStorage.setItem("products", JSON.stringify(data))
+    setProducts(data)
+  }
+
+  const activeProducts = products.filter(
+    (p) => p.status === "active"
+  )
 
   const filteredProducts = activeProducts.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const selectProduct = (p) => {
-    setSelected(p)
-    setQty(1)
-  }
+  const isLowStock = (p) =>
+    p.status === "active" &&
+    Number(p.qty) <= Number(p.minQty || 5)
 
+  // ✅ SELL PRODUCT
   const sellProduct = () => {
     if (!selected) return alert("Select product")
-
     if (qty <= 0) return alert("Invalid quantity")
     if (qty > selected.qty) return alert("Not enough stock")
 
@@ -51,11 +83,30 @@ function Sales() {
     addSale(sale)
 
     const updated = [...products]
-    const index = updated.findIndex((p) => p.name === selected.name)
+    const index = updated.findIndex(
+      (p) => p.name === selected.name
+    )
 
     if (index !== -1) {
       updated[index].qty -= qty
-      localStorage.setItem("products", JSON.stringify(updated))
+
+      saveProducts(updated)
+
+      // 🔥 LOG: SOLD
+      updateProductHistory(
+        selected.name,
+        "sold",
+        `Sold ${qty} units`
+      )
+
+      // 🔥 LOG: LOW STOCK
+      if (updated[index].qty <= (updated[index].minQty || 5)) {
+        updateProductHistory(
+          selected.name,
+          "low stock",
+          `Stock low: ${updated[index].qty}`
+        )
+      }
     }
 
     setSelected(null)
@@ -63,6 +114,7 @@ function Sales() {
     loadData()
   }
 
+  // 🔥 UNDO SALE
   const undoSale = (id) => {
     const sale = sales.find((s) => s.id === id)
     if (!sale) return
@@ -76,7 +128,14 @@ function Sales() {
 
     if (index !== -1) {
       updatedProducts[index].qty += sale.quantity
-      localStorage.setItem("products", JSON.stringify(updatedProducts))
+      saveProducts(updatedProducts)
+
+      // 🔥 LOG: UNDO SALE
+      updateProductHistory(
+        sale.productName,
+        "undo sale",
+        `Restored ${sale.quantity} units`
+      )
     }
 
     const updatedSales = sales.filter((s) => s.id !== id)
@@ -96,13 +155,13 @@ function Sales() {
       {/* HEADER */}
       <div className="sales-header">
         <h1>Sales Dashboard</h1>
-        <p>Total Revenue: <span>Rs {totalRevenue}</span></p>
+        <p>Total Revenue: Rs {totalRevenue}</p>
       </div>
 
-      {/* MAIN GRID */}
+      {/* MAIN */}
       <div className="sales-grid-modern">
 
-        {/* LEFT - PRODUCTS */}
+        {/* PRODUCTS */}
         <div className="sales-panel">
           <h3>Products</h3>
 
@@ -117,12 +176,17 @@ function Sales() {
             {filteredProducts.map((p) => (
               <div
                 key={p.name}
-                className={`product-card ${selected?.name === p.name ? "active" : ""}`}
-                onClick={() => selectProduct(p)}
+                className={`product-card ${
+                  selected?.name === p.name ? "active" : ""
+                }`}
+                onClick={() => setSelected(p)}
               >
                 <div>
                   <strong>{p.name}</strong>
-                  <p>Stock: {p.qty}</p>
+                  <p>
+                    Stock: {p.qty}
+                    {isLowStock(p) && " ⚠ LOW"}
+                  </p>
                 </div>
                 <div>Rs {p.price}</div>
               </div>
@@ -130,9 +194,8 @@ function Sales() {
           </div>
         </div>
 
-        {/* RIGHT - QUICK SELL */}
+        {/* QUICK SELL */}
         <div className="sales-panel">
-
           <h3>Quick Sell</h3>
 
           {selected ? (
@@ -169,21 +232,29 @@ function Sales() {
       <div className="sales-history">
         <h3>Recent Sales</h3>
 
-        {sales.slice().reverse().map((s) => (
-          <div key={s.id} className="sale-row">
-            <div>
-              <strong>{s.productName}</strong>
-              <p>{s.date}</p>
-            </div>
+        {sales.length === 0 ? (
+          <p>No sales found</p>
+        ) : (
+          sales
+            .slice()
+            .reverse()
+            .map((s) => (
+              <div key={s.id} className="sale-row">
+                <div>
+                  <strong>{s.productName}</strong>
+                  <p>{s.date}</p>
+                </div>
 
-            <div>Qty: {s.quantity}</div>
-            <div>Rs {s.totalPrice}</div>
+                <div>Qty: {s.quantity}</div>
+                <div>Rs {s.totalPrice}</div>
 
-            <button onClick={() => undoSale(s.id)}>Undo</button>
-          </div>
-        ))}
+                <button onClick={() => undoSale(s.id)}>
+                  Undo
+                </button>
+              </div>
+            ))
+        )}
       </div>
-
     </div>
   )
 }
